@@ -52,7 +52,7 @@ class RAA:
     try:
       messages = [{"role": "system", "content": "Hello"}, {"role": "user", "content": "Hi"}]
       if self.openai_version == ">=1.3.0":
-        response = self.client.chat.completion.create(model='gpt-3.5-turbo',
+        response = self.client.chat.completions.create(model='gpt-3.5-turbo',
                                     messages=messages,
                                     temperature=0.0,
                                     max_tokens=2,
@@ -138,7 +138,7 @@ def _openai_ChatCompletion(messages: List[Dict], model, temperature=0, max_token
 
   if self.openai_version == ">=1.3.0":
     try:
-      response = self.client.chat.completion.create(
+      response = self.client.chat.completions.create(
           model=model,
           messages=messages,
           temperature=temperature,
