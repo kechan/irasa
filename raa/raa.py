@@ -50,12 +50,19 @@ class RAA:
     Use the cheapest model, short prompt, and max_tokens=2
     '''
     try:
-      response = openai.ChatCompletion.create(model='gpt-3.5-turbo',
-                                  messages=[{"role": "system", "content": "Hello"},
-                                              {"role": "user", "content": "Hi"}],
-                                  temperature=0.0,
+      messages = [{"role": "system", "content": "Hello"}, {"role": "user", "content": "Hi"}]
+      if self.openai_version == ">=1.3.0":
+        response = self.client.chat.completion.create(model='gpt-3.5-turbo',
+                                    messages=messages,
+                                    temperature=0.0,
                                     max_tokens=2,
-                                  )
+                                    )
+      else:
+        response = openai.ChatCompletion.create(model='gpt-3.5-turbo',
+                                    messages=messages,
+                                    temperature=0.0,
+                                    max_tokens=2,
+                                    )
       print(response.choices[0].message["content"])
       if len(response.choices[0].message["content"]) > 0:   # this could be "Hello!"
         return True
