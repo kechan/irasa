@@ -144,7 +144,7 @@ You may exclude the delimiters <prompt> and </prompt> in the json.
        stop=stop_after_attempt(3), 
        retry_error_cls=RetryError
 )
-def _openai_ChatCompletion_newer_than_1d3d0(client: openai.OpenAI, messages: List[Dict], model, temperature=0, max_tokens=None) -> str:
+def _openai_ChatCompletion_newer_than_1d3d0(client, messages: List[Dict], model, temperature=0, max_tokens=None) -> str:
   response = None
 
   try:
