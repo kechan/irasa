@@ -1,7 +1,11 @@
 from typing import List, Dict
 import os, openai, tiktoken
 import pkg_resources
-from openai.error import OpenAIError
+try:
+  from openai.error import OpenAIError
+except ImportError:
+  print("Not importing OpenAIError from openai.error, newer version has changed")
+
 from tenacity import retry, wait_random_exponential, stop_after_attempt, RetryError
 from dotenv import load_dotenv, find_dotenv
 
@@ -124,17 +128,46 @@ You may exclude the delimiters <prompt> and </prompt> in the json.
 )
 def _openai_ChatCompletion(messages: List[Dict], model, temperature=0, max_tokens=None) -> str:
   response = None
-  try:
-    if self.openai_version == ">=1.3.0":
+
+  if self.openai_version == ">=1.3.0":
+    try:
       response = self.client.chat.completion.create(
           model=model,
           messages=messages,
           temperature=temperature,
           max_tokens=max_tokens,
-      )
+      )      
       return response.choices[0].message.content
-    else:
-      # use older API
+
+      # TODO: error handling generalized to particular error messages
+    except RetryError as e:
+      print("Unable to generate ChatCompletion response after 3 attempts")
+      print(f"Exception: {e}")
+      raise Exception("Unable to generate ChatCompletion response after 3 attempts")
+
+    except openai.AIError as e:
+      # Catching OpenAI specific errors and re-raising them.
+      # print(f"OpenAI Error: {e.error['message']}")
+      e.chat_messages = messages
+      raise e
+
+    except openai.APIConnectionError as e:
+      e.chat_messages = messages
+      raise e
+
+    except openai.APIStatusError as e:
+      e.chat_messages = messages
+      raise e
+    
+    except Exception as e:
+      print("An unexpected error occurred while generating ChatCompletion response")
+      print(f"Exception: {e}")
+      # raise Exception("An unexpected error occurred while generating ChatCompletion response")
+      raise e
+
+  else:
+    # use older API
+    try:
       if max_tokens is None:    # assuem openai default
         response = openai.ChatCompletion.create(
             model=model,
@@ -149,23 +182,25 @@ def _openai_ChatCompletion(messages: List[Dict], model, temperature=0, max_token
             max_tokens=max_tokens,
         )
       return response.choices[0].message["content"]
-  
-  # TODO: error handling generalized to particular error messages
-  except RetryError as e:
-    print("Unable to generate ChatCompletion response after 3 attempts")
-    print(f"Exception: {e}")
-    raise Exception("Unable to generate ChatCompletion response after 3 attempts")
 
-  except OpenAIError as e:
-    # Catching OpenAI specific errors and re-raising them.
-    # print(f"OpenAI Error: {e.error['message']}")
-    e.chat_messages = messages
-    raise e
+    # TODO: error handling generalized to particular error messages 
+    except RetryError as e:
+      print("Unable to generate ChatCompletion response after 3 attempts")
+      print(f"Exception: {e}")
+      raise Exception("Unable to generate ChatCompletion response after 3 attempts")
+
+    except OpenAIError as e:
+      # Catching OpenAI specific errors and re-raising them.
+      # print(f"OpenAI Error: {e.error['message']}")
+      e.chat_messages = messages
+      raise e
+    
+    except Exception as e:
+      print("An unexpected error occurred while generating ChatCompletion response")
+      print(f"Exception: {e}")
+      # raise Exception("An unexpected error occurred while generating ChatCompletion response")
+      raise e
   
-  except Exception as e:
-    print("An unexpected error occurred while generating ChatCompletion response")
-    print(f"Exception: {e}")
-    # raise Exception("An unexpected error occurred while generating ChatCompletion response")
-    raise e
+  
   
 
