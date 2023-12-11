@@ -57,14 +57,18 @@ class RAA:
                                     temperature=0.0,
                                     max_tokens=2,
                                     )
+
+        content = response.choices[0].message.content
       else:
         response = openai.ChatCompletion.create(model='gpt-3.5-turbo',
                                     messages=messages,
                                     temperature=0.0,
                                     max_tokens=2,
                                     )
-      print(response.choices[0].message["content"])
-      if len(response.choices[0].message["content"]) > 0:   # this could be "Hello!"
+        content = response.choices[0].message["content"]                                    
+                                  
+      print(content)
+      if len(content) > 0:   # this could be "Hello!"
         return True
       else:
         return False
