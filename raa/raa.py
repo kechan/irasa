@@ -91,7 +91,7 @@ class RAA:
 
     if self.llm_model == GPT_MODEL:
       if self.openai_version == ">=1.3.0":
-        response = _openai_ChatCompletion_newer_than_1d3d0(messages, model=self.llm_model, temperature=temperature)
+        response = _openai_ChatCompletion_newer_than_1d3d0(client=self.client, messages=messages, model=self.llm_model, temperature=temperature)
       else:
         response = _openai_ChatCompletion_older_than_1d3d0(messages, model=self.llm_model, temperature=temperature)
       return response
@@ -116,7 +116,7 @@ class RAA:
    
     if not debug:
       if self.openai_version == '>=1.3.0':
-        response = _openai_ChatCompletion_newer_than_1d3d0(messages, model=self.llm_model, temperature=temperature, max_tokens=max_tokens)
+        response = _openai_ChatCompletion_newer_than_1d3d0(client=self.client, messages=messages, model=self.llm_model, temperature=temperature, max_tokens=max_tokens)
       else:
         response = _openai_ChatCompletion_older_than_1d3d0(messages, model=self.llm_model, temperature=temperature, max_tokens=max_tokens)
     else: 
@@ -144,11 +144,11 @@ You may exclude the delimiters <prompt> and </prompt> in the json.
        stop=stop_after_attempt(3), 
        retry_error_cls=RetryError
 )
-def _openai_ChatCompletion_newer_than_1d3d0(messages: List[Dict], model, temperature=0, max_tokens=None) -> str:
+def _openai_ChatCompletion_newer_than_1d3d0(client: openai.OpenAI, messages: List[Dict], model, temperature=0, max_tokens=None) -> str:
   response = None
 
   try:
-    response = self.client.chat.completions.create(
+    response = client.chat.completions.create(
         model=model,
         messages=messages,
         temperature=temperature,
@@ -162,7 +162,7 @@ def _openai_ChatCompletion_newer_than_1d3d0(messages: List[Dict], model, tempera
     print(f"Exception: {e}")
     raise Exception("Unable to generate ChatCompletion response after 3 attempts")
 
-  except openai.AIError as e:
+  except openai.APIError as e:
     # Catching OpenAI specific errors and re-raising them.
     # print(f"OpenAI Error: {e.error['message']}")
     e.chat_messages = messages
