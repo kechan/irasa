@@ -11,7 +11,13 @@ from tenacity import retry, wait_random_exponential, stop_after_attempt, RetryEr
 from dotenv import load_dotenv, find_dotenv
 
 
-AVAILABLE_GPT_MODELS = ['gpt-3.5-turbo-0613', 'gpt-3.5-turbo', 'gpt-4', 'gpt-4-1106-preview', 'gpt-4-0125-preview']
+AVAILABLE_GPT_MODELS = ['gpt-3.5-turbo-0613', 
+                        'gpt-3.5-turbo', 
+                        'gpt-4', 
+                        'gpt-4-1106-preview', 
+                        'gpt-4-0125-preview',
+                        'gpt-4o'
+                        ]
 
 class RAA:
   def __init__(self, llm_model=None, sys_prompt=None, api_key_env_var: str = 'OPENAI_API_KEY'):
